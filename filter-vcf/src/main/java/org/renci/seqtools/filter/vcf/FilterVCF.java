@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FilterVCF implements Callable<Void> {
+public class FilterVCF implements Callable<Long> {
 
     private static final Logger logger = LoggerFactory.getLogger(FilterVCF.class);
 
@@ -53,9 +53,10 @@ public class FilterVCF implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws FilterVCFException {
+    public Long call() throws FilterVCFException {
         logger.info(this.toString());
 
+        long startTime = System.currentTimeMillis();
         Map<String, List<Range<Integer>>> map = new HashMap<String, List<Range<Integer>>>();
         try (FileReader fr = new FileReader(intervalList); BufferedReader br = new BufferedReader(fr)) {
             String line;
@@ -102,7 +103,7 @@ public class FilterVCF implements Callable<Void> {
                 BufferedWriter bw = new BufferedWriter(fw);
                 FileReader fr = new FileReader(input);
                 BufferedReader br = new BufferedReader(fr)) {
-            
+
             String line;
             line: while ((line = br.readLine()) != null) {
 
@@ -150,7 +151,9 @@ public class FilterVCF implements Callable<Void> {
             e.printStackTrace();
         }
 
-        return null;
+        long endTime = System.currentTimeMillis();
+
+        return endTime - startTime;
     }
 
     public File getIntervalList() {
@@ -225,7 +228,8 @@ public class FilterVCF implements Callable<Void> {
             if (commandLine.hasOption("missing")) {
                 app.setWithMissing(Boolean.TRUE);
             }
-            app.call();
+            Long duration = app.call();
+            logger.info("Duration {} seconds", duration / 1000);
         } catch (ParseException | FilterVCFException e) {
             logger.error(e.getMessage());
             helpFormatter.printHelp("FilterVCF", cliOptions);
