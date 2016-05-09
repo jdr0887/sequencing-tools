@@ -101,6 +101,11 @@
       	<version>${commons.cli.version}</version>
       </dependency>
       <dependency>
+	<groupId>org.apache.commons</groupId>
+	<artifactId>commons-compress</artifactId>
+	<version>1.9</version>
+      </dependency>      
+      <dependency>
       	<groupId>org.apache.commons</groupId>
       	<artifactId>commons-csv</artifactId>
       	<version>${commons.csv.version}</version>
@@ -110,6 +115,11 @@
       	<artifactId>slf4j-api</artifactId>
       	<version>${slf4j.version}</version>
       </dependency>
+      <dependency>
+	<groupId>com.github.broadinstitute</groupId>
+	<artifactId>picard</artifactId>
+	<version>1.130</version>
+      </dependency> 
       <dependency>
       	<groupId>org.slf4j</groupId>
       	<artifactId>slf4j-log4j12</artifactId>
@@ -202,5 +212,6 @@
   </build>
   <modules>
     <module>filter-vcf</module>
+    <module>converter</module>
   </modules>
 </project>
