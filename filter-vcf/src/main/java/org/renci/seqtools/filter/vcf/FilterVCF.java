@@ -88,7 +88,7 @@ public class FilterVCF implements Callable<Long> {
         try (FileReader fr = new FileReader(intervalList); BufferedReader br = new BufferedReader(fr)) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isEmpty(line.trim()) || line.startsWith("#")) {
+                if (StringUtils.isEmpty(line.trim()) || line.startsWith("#") || line.startsWith("@")) {
                     continue;
                 }
 
