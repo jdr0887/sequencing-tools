@@ -61,7 +61,7 @@ public class FilterVCF implements Callable<Long> {
         long startTime = System.currentTimeMillis();
         Map<String, List<Range<Integer>>> map = new HashMap<String, List<Range<Integer>>>();
 
-        Pattern gatkPattern = Pattern.compile("(.+):(\\d+)-(\\d+)");
+        Pattern gatkPattern = Pattern.compile("(.+):(\\d+)-?(\\d+)?");
 
         // interval list could be picard format or gatk format...try to handle both
         try (FileReader fr = new FileReader(intervalList); BufferedReader br = new BufferedReader(fr)) {
