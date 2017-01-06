@@ -3,13 +3,13 @@
   <parent>
     <groupId>org.renci.sequencing-tools</groupId>
     <artifactId>sequencing-tools</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.3</version>
   </parent>
   <name>Sequencing Tools :: Filter VCF</name>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.renci.sequencing-tools</groupId>
   <artifactId>filter-vcf</artifactId>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.3</version>
   <packaging>bundle</packaging>
   <dependencies>
     <dependency>
