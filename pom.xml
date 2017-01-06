@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.renci</groupId>
     <artifactId>parent</artifactId>
-    <version>0.0.11</version>
+    <version>0.0.14</version>
   </parent>
   <name>Sequencing Tools</name>
   <modelVersion>4.0.0</modelVersion>
