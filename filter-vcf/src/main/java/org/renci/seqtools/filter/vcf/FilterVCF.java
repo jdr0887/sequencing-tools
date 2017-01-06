@@ -110,15 +110,8 @@ public class FilterVCF implements Callable<Long> {
                 } else {
                     String[] lineArray = line.split("\t");
                     chromosome = lineArray[0];
-                    String position = lineArray[1];
-                    if (position.contains("-")) {
-                        String[] positionSplit = position.split("-");
-                        start = Integer.valueOf(positionSplit[0]);
-                        end = Integer.valueOf(positionSplit[1]);
-                    } else {
-                        start = Integer.valueOf(position);
-                        end = start;
-                    }
+                    start = Integer.valueOf(lineArray[1]);
+                    end = Integer.valueOf(lineArray[2]);
                 }
                 Range<Integer> range = Range.between(start, end);
                 map.get(chromosome).add(range);
