@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -58,15 +60,26 @@ public class FilterVCF implements Callable<Long> {
 
         long startTime = System.currentTimeMillis();
         Map<String, List<Range<Integer>>> map = new HashMap<String, List<Range<Integer>>>();
+
+        Pattern gatkPattern = Pattern.compile("(.+):(\\d+)-(\\d+)");
+
+        // interval list could be picard format or gatk format...try to handle both
         try (FileReader fr = new FileReader(intervalList); BufferedReader br = new BufferedReader(fr)) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isEmpty(line.trim()) || line.startsWith("#")) {
+                if (StringUtils.isEmpty(line.trim()) || line.startsWith("#") || line.startsWith("@")) {
                     continue;
                 }
-                String[] lineArray = line.split(":");
-                String chromosome = lineArray[0];
-                map.put(chromosome, new ArrayList<Range<Integer>>());
+                Matcher gatkMatcher = gatkPattern.matcher(line);
+                if (gatkMatcher.matches()) {
+                    String[] lineArray = line.split(":");
+                    String chromosome = lineArray[0];
+                    map.put(chromosome, new ArrayList<Range<Integer>>());
+                } else {
+                    String[] lineArray = line.split("\t");
+                    String chromosome = lineArray[0];
+                    map.put(chromosome, new ArrayList<Range<Integer>>());
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -78,20 +91,35 @@ public class FilterVCF implements Callable<Long> {
                 if (StringUtils.isEmpty(line.trim()) || line.startsWith("#")) {
                     continue;
                 }
-                String[] lineArray = line.split(":");
-                String chromosome = lineArray[0];
-                String position = lineArray[1];
+
+                String chromosome = null;
                 Integer start, end;
-
-                if (position.contains("-")) {
-                    String[] positionSplit = position.split("-");
-                    start = Integer.valueOf(positionSplit[0]);
-                    end = Integer.valueOf(positionSplit[1]);
+                Matcher gatkMatcher = gatkPattern.matcher(line);
+                if (gatkMatcher.matches()) {
+                    String[] lineArray = line.split(":");
+                    chromosome = lineArray[0];
+                    String position = lineArray[1];
+                    if (position.contains("-")) {
+                        String[] positionSplit = position.split("-");
+                        start = Integer.valueOf(positionSplit[0]);
+                        end = Integer.valueOf(positionSplit[1]);
+                    } else {
+                        start = Integer.valueOf(position);
+                        end = start;
+                    }
                 } else {
-                    start = Integer.valueOf(position);
-                    end = start;
+                    String[] lineArray = line.split("\t");
+                    chromosome = lineArray[0];
+                    String position = lineArray[1];
+                    if (position.contains("-")) {
+                        String[] positionSplit = position.split("-");
+                        start = Integer.valueOf(positionSplit[0]);
+                        end = Integer.valueOf(positionSplit[1]);
+                    } else {
+                        start = Integer.valueOf(position);
+                        end = start;
+                    }
                 }
-
                 Range<Integer> range = Range.between(start, end);
                 map.get(chromosome).add(range);
             }
