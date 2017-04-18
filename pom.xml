@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.renci.sequencing-tools</groupId>
   <artifactId>sequencing-tools</artifactId>
-  <version>0.0.7</version>
+  <version>0.0.8-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
     <maven.site.plugin.skip>false</maven.site.plugin.skip>    
@@ -48,7 +48,7 @@
     <url>https://github.com/jdr0887/sequencing-tools</url>
     <developerConnection>scm:git:git@github.com:jdr0887/sequencing-tools.git</developerConnection>
     <connection>scm:git:git@github.com:jdr0887/sequencing-tools.git</connection>
-    <tag>sequencing-tools-0.0.7</tag>
+    <tag>HEAD</tag>
   </scm>
   <dependencyManagement>
     <dependencies>
