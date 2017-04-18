@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.renci.sequencing-tools</groupId>
   <artifactId>sequencing-tools</artifactId>
-  <version>0.0.8-SNAPSHOT</version>
+  <version>0.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
     <commons.discovery.version>0.5</commons.discovery.version>
