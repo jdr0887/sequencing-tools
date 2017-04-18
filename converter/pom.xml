@@ -11,6 +11,9 @@
   <artifactId>converter</artifactId>
   <version>0.0.7-SNAPSHOT</version>
   <packaging>bundle</packaging>
+  <properties>
+    <maven.site.plugin.skip>true</maven.site.plugin.skip>
+  </properties>  
   <developers>
     <developer>
       <id>kcavin</id>
