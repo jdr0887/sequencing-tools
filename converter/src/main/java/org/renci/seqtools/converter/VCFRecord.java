@@ -3,14 +3,7 @@ package org.renci.seqtools.converter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * VCFRecord
- * <p>
- * A handy way to wrap up VCF data for a column.
- * 
- * @author k47k4705
- * 
- */
+
 public class VCFRecord {
 
     private int column;
@@ -45,9 +38,7 @@ public class VCFRecord {
 
     private boolean bHasNoReferenceData;
 
-    /**
-     * private VCFRecord constructor
-     */
+    
     private VCFRecord(int iColumnIn, String sPositionIn, String sGenotypeIn, String sReferenceGenotypeIn, String sConsensusQualityIn,
             String sSNPQualityIn, String sMappingQualityIn, String sReadDepthIn, String sReadQualityScoresIn, String sReadBasesIn,
             boolean bHasIndelIn, boolean bHasSNPIn, boolean bIsReverseStrandIn, boolean bIsNoCallIn, boolean bHasNoReferenceDataIn) {
@@ -69,13 +60,9 @@ public class VCFRecord {
 
         tListToReturn = new ArrayList<String>();
 
-    } // end VCFRecord
+    } 
 
-    /**
-     * getInstance()
-     * <p>
-     * Return an instance of this object.
-     */
+    
     public static VCFRecord getInstance(int iColumnIn, String sPositionIn, String sGenotypeIn, String sReferenceGenotypeIn,
             String sConsensusQualityIn, String sSNPQualityIn, String sMappingQualityIn, String sReadDepthIn, String sReadQualityScoresIn,
             String sReadBasesIn, boolean bHasIndelIn, boolean bHasSNPIn, boolean bIsReverseStrandIn, boolean bIsNoCallIn,
@@ -83,7 +70,7 @@ public class VCFRecord {
         return new VCFRecord(iColumnIn, sPositionIn, sGenotypeIn, sReferenceGenotypeIn, sConsensusQualityIn, sSNPQualityIn,
                 sMappingQualityIn, sReadDepthIn, sReadQualityScoresIn, sReadBasesIn, bHasIndelIn, bHasSNPIn, bIsReverseStrandIn,
                 bIsNoCallIn, bHasNoReferenceDataIn);
-    } // end getInstance
+    } 
 
     public String getPosition() {
         return position;
@@ -167,23 +154,23 @@ public class VCFRecord {
 
     public boolean isIndel() {
         return this.bHasIndel;
-    } // end isIndel
+    } 
 
     public boolean isSNP() {
         return this.bHasSNP;
-    } // end isSNP
+    } 
 
     public boolean isReverseStrand() {
         return this.bIsReverseStrand;
-    } // end isForwardStrand
+    } 
 
     public boolean isNoCall() {
         return this.bIsNoCall;
-    } // end isNoCall
+    } 
 
     public boolean hasNoReferenceData() {
         return this.bHasNoReferenceData;
-    } // end hasNoReferenceData
+    } 
 
     public List<String> getVCFRecordAsList() {
         this.tListToReturn.clear();
@@ -196,6 +183,6 @@ public class VCFRecord {
         tListToReturn.add(this.getReadbases());
         tListToReturn.add(this.getReadqualityScores());
         return tListToReturn;
-    } // end getVCFRecordAsList
+    } 
 
-} // end VCFRecord
+} 

@@ -1,31 +1,10 @@
 package org.renci.seqtools.converter;
 
-/**
- * ConversionFormatFactory
- * <p>
- * A Factory object used to make conversion formats for consensus files.
- * BZip2VCFConversionExomeFormat/BZip2VCFConversionGenomeFormat, etc.
- * 
- * @author k47k4705
- * 
- */
 public class ConversionFormatFactory {
 
-    /**
-     * ConversionFormatFactory private constructor
-     */
     private ConversionFormatFactory() {
     }
 
-    /**
-     * makePileupFormat()
-     * <p>
-     * Makes the appropriate format object given a conversion type to make.
-     * 
-     * @param tConversionType
-     *            -- the type of conversion strategy to make.
-     * @return tConversionStrategy -- an interface fronting for the "right" conversion strategy.
-     */
     public static IConversionFormat makePileupFormat(GenomeType tGenomeTypeIn) {
         IConversionFormat tFormat = null;
 
@@ -38,14 +17,8 @@ public class ConversionFormatFactory {
         }
 
         return tFormat;
-    } // end makePileupFormat
+    }
 
-    /**
-     * makeVCFFormat()
-     * 
-     * @param tGenomeTypeIn
-     * @return
-     */
     public static IConversionFormat makeVCFFormat(GenomeType tGenomeTypeIn, boolean bIsInTestMode) {
         IConversionFormat tFormat = null;
 
@@ -60,6 +33,6 @@ public class ConversionFormatFactory {
         }
 
         return tFormat;
-    } // end makeVCFFormat
+    }
 
-} // end ConversionFormatFactory
+}

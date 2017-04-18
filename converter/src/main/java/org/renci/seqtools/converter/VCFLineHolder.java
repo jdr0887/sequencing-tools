@@ -3,45 +3,22 @@ package org.renci.seqtools.converter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A data structure for holding three VCF lines at a time.
- * <p>
- * VCF files can contain duplicate positions. Usually the duplicate position (second position) is an indel. We need a
- * look-back ability.
- * <p>
- * The goal is to keep a buffer of VCF lines so we can look-back at the previous line and see if the current position is
- * a duplicate.
- * <p>
- * When we determine an indel does or does not exist, we then write out the correct line, push a new previous line into
- * this object and roll on.
- * 
- * @author k47k4705
- * 
- */
 public class VCFLineHolder {
 
-    // Previous line list (before the first line).
     private List<String> tPreviousLineList;
 
-    // First line list.
     private List<String> tCurrentLineList;
 
-    // Second line list.
     private List<String> tNextLineList;
 
-    // Last processed List.
     private List<String> tLastProcessedList;
 
-    // Previous VCF line as a String.
     private String sPreviousLine;
 
-    // First VCF line as a String.
     private String sCurrentLine;
 
-    // Second VCF line as a String.
     private String sNextLine;
 
-    // Last processed line.
     private String sLastProcessedLine;
 
     public String getPreviousLine() {
@@ -70,15 +47,12 @@ public class VCFLineHolder {
 
     public String getLastProcessedLine() {
         return this.sLastProcessedLine;
-    } // end getLastProcessedLine
+    }
 
     public void setLastProcessedLine(String sLastProcessedLineIn) {
         this.sLastProcessedLine = sLastProcessedLineIn;
-    } // end setLastProcessedLine
+    }
 
-    /**
-     * VCFLineHolder private arg constructor
-     */
     private VCFLineHolder(List<String> tPreviousLineListIn, List<String> tFirstLineListIn, List<String> tSecondLineListIn,
             String sPreviousLineIn, String sFirstLineIn, String sSecondLineIn) {
         this.tPreviousLineList = new ArrayList<String>(tPreviousLineListIn);
@@ -87,11 +61,8 @@ public class VCFLineHolder {
         this.sPreviousLine = sPreviousLineIn;
         this.sCurrentLine = sFirstLineIn;
         this.sNextLine = sSecondLineIn;
-    } // end VCFLineHolder
+    }
 
-    /**
-     * VCFLineHolder private no-arg constructor
-     */
     private VCFLineHolder() {
         this.tPreviousLineList = new ArrayList<String>();
         this.tCurrentLineList = new ArrayList<String>();
@@ -100,61 +71,29 @@ public class VCFLineHolder {
         this.sCurrentLine = "";
         this.sNextLine = "";
 
-    } // end VCFLineHolder
+    }
 
-    /**
-     * getInstance()
-     * <p>
-     * Return a VCFLineHolder instance.
-     * 
-     * @return VCFLineHolder
-     */
     public static VCFLineHolder getInstance(List<String> tPreviousLineListIn, List<String> tFirstLineListIn, List<String> tSecondLineListIn,
             String sPreviousLineIn, String sFirstLineIn, String sSecondLineIn) {
         return new VCFLineHolder(tPreviousLineListIn, tFirstLineListIn, tSecondLineListIn, sPreviousLineIn, sFirstLineIn, sSecondLineIn);
-    } // end getInstance()
+    }
 
-    /**
-     * getInstance()
-     * <p>
-     * Return a VCFLineHolder instance.
-     * 
-     * @return VCFLineHolder
-     */
     public static VCFLineHolder getInstance() {
         return new VCFLineHolder();
-    } // end getInstance()
+    }
 
-    /**
-     * arePreviousAndCurrentLinePositionsEqual()
-     * <p>
-     * Determines if the previous position equals the first position in the previous and first lists
-     * 
-     * @return boolean -- true, positions are equal, false, positions are not equal.
-     */
     public boolean arePreviousAndCurrentLinePositionsEqual() {
         return this.tCurrentLineList.get(1).equalsIgnoreCase(this.tPreviousLineList.get(1));
-    } // end arePreviousFirst
+    }
 
-    /**
-     * arePreviousAndNextLinePositionsEqual()
-     */
     public boolean arePreviousAndNextLinePositionsEqual() {
         return this.tNextLineList.get(1).equalsIgnoreCase(this.tPreviousLineList.get(1));
-    } // end arePreviousSecond
+    }
 
-    /**
-     * areCurrentNextPositionsEqual()
-     */
     public boolean areCurrentAndNextPositionsEqual() {
         return this.tNextLineList.get(1).equalsIgnoreCase(this.tCurrentLineList.get(1));
-    } // end areFirstSecond
+    }
 
-    /**
-     * setLines()
-     * <p>
-     * Set all the line lists at once.
-     */
     public void setAll(List<String> tPreviousLineListIn, List<String> tFirstLineListIn, List<String> tSecondLineListIn,
             String sPreviousLineIn, String sFirstLineIn, String sSecondLineIn) {
         this.tPreviousLineList = new ArrayList<String>(tPreviousLineListIn);
@@ -163,7 +102,7 @@ public class VCFLineHolder {
         this.sPreviousLine = sPreviousLineIn;
         this.sCurrentLine = sFirstLineIn;
         this.sNextLine = sSecondLineIn;
-    } // end VCFLineHolder
+    }
 
     public List<String> getPreviousLineList() {
         return tPreviousLineList;
@@ -197,4 +136,4 @@ public class VCFLineHolder {
         this.tLastProcessedList = new ArrayList<String>(tLastProcessedLineListIn);
     }
 
-} // end VCFLineHolder
+}
