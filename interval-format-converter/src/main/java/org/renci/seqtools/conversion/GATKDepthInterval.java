@@ -328,14 +328,9 @@ public class GATKDepthInterval implements Serializable, Comparable<GATKDepthInte
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((averageCoverage == null) ? 0 : averageCoverage.hashCode());
         result = prime * result + ((contig == null) ? 0 : contig.hashCode());
         result = prime * result + ((endPosition == null) ? 0 : endPosition.hashCode());
-        result = prime * result + ((sampleGranularMedian == null) ? 0 : sampleGranularMedian.hashCode());
-        result = prime * result + ((sampleGranularQ1 == null) ? 0 : sampleGranularQ1.hashCode());
-        result = prime * result + ((sampleGranularQ3 == null) ? 0 : sampleGranularQ3.hashCode());
         result = prime * result + ((startPosition == null) ? 0 : startPosition.hashCode());
-        result = prime * result + ((totalCoverage == null) ? 0 : totalCoverage.hashCode());
         return result;
     }
 
@@ -348,11 +343,6 @@ public class GATKDepthInterval implements Serializable, Comparable<GATKDepthInte
         if (getClass() != obj.getClass())
             return false;
         GATKDepthInterval other = (GATKDepthInterval) obj;
-        if (averageCoverage == null) {
-            if (other.averageCoverage != null)
-                return false;
-        } else if (!averageCoverage.equals(other.averageCoverage))
-            return false;
         if (contig == null) {
             if (other.contig != null)
                 return false;
@@ -363,35 +353,10 @@ public class GATKDepthInterval implements Serializable, Comparable<GATKDepthInte
                 return false;
         } else if (!endPosition.equals(other.endPosition))
             return false;
-        if (sampleGranularMedian == null) {
-            if (other.sampleGranularMedian != null)
-                return false;
-        } else if (!sampleGranularMedian.equals(other.sampleGranularMedian))
-            return false;
-        if (sampleGranularQ1 == null) {
-            if (other.sampleGranularQ1 != null)
-                return false;
-        } else if (!sampleGranularQ1.equals(other.sampleGranularQ1))
-            return false;
-        if (sampleGranularQ3 == null) {
-            if (other.sampleGranularQ3 != null)
-                return false;
-        } else if (!sampleGranularQ3.equals(other.sampleGranularQ3))
-            return false;
-        if (sampleMeanCoverage == null) {
-            if (other.sampleMeanCoverage != null)
-                return false;
-        } else if (!sampleMeanCoverage.equals(other.sampleMeanCoverage))
-            return false;
         if (startPosition == null) {
             if (other.startPosition != null)
                 return false;
         } else if (!startPosition.equals(other.startPosition))
-            return false;
-        if (totalCoverage == null) {
-            if (other.totalCoverage != null)
-                return false;
-        } else if (!totalCoverage.equals(other.totalCoverage))
             return false;
         return true;
     }
