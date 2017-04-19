@@ -3,13 +3,13 @@
   <parent>
     <groupId>org.renci.sequencing-tools</groupId>
     <artifactId>sequencing-tools</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.0.8</version>
   </parent>
   <name>RENCI :: Sequencing Tools :: Interval Format Converter</name>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.renci.sequencing-tools</groupId>
   <artifactId>interval-format-converter</artifactId>
-  <version>0.0.8-SNAPSHOT</version>
+  <version>0.0.8</version>
   <packaging>bundle</packaging>
   <properties>
     <maven.site.plugin.skip>true</maven.site.plugin.skip>
