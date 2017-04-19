@@ -73,24 +73,26 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
         }
         SortedSet<GATKDepthInterval> allIntervalSet = new TreeSet<GATKDepthInterval>();
         allIntervals.forEach(a -> allIntervalSet.add(new GATKDepthInterval(a)));
+        allIntervals = null;
 
         ExecutorService es = Executors.newFixedThreadPool(threads);
 
         logger.info("reading samtools depth file");
-        try (FileReader fr = new FileReader(input);
-                BufferedReader br = new BufferedReader(fr, Double.valueOf(Math.pow(2, 14)).intValue())) {
+        try (FileReader fr = new FileReader(input); BufferedReader br = new BufferedReader(fr)) {
             String line;
             while ((line = br.readLine()) != null) {
 
                 SAMToolsDepthInterval samtoolsDepthInterval = new SAMToolsDepthInterval(line);
 
-                es.submit(() -> {
+                Optional<GATKDepthInterval> optionalGATKDepthInterval = allIntervalSet.parallelStream()
+                        .filter(a -> a.getContig().equals(samtoolsDepthInterval.getContig())
+                                && a.getPositionRange().contains(samtoolsDepthInterval.getPosition()))
+                        .findFirst();
 
-                    Optional<GATKDepthInterval> optionalGATKDepthInterval = allIntervalSet.stream()
-                            .filter(a -> a.getContig().equals(samtoolsDepthInterval.getContig())
-                                    && a.getPositionRange().contains(samtoolsDepthInterval.getPosition()))
-                            .findFirst();
-                    if (optionalGATKDepthInterval.isPresent()) {
+                if (optionalGATKDepthInterval.isPresent()) {
+
+                    es.submit(() -> {
+
                         GATKDepthInterval gatkDepthInterval = optionalGATKDepthInterval.get();
 
                         gatkDepthInterval.getTotalCoverage().addAndGet(samtoolsDepthInterval.getCoverage());
@@ -131,13 +133,14 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
                             gatkDepthInterval.getSampleCountAbove50().incrementAndGet();
                         }
 
-                    }
-
-                });
+                    });
+                }
 
             }
             es.shutdown();
-            es.awaitTermination(1L, TimeUnit.HOURS);
+            if (!es.awaitTermination(90L, TimeUnit.MINUTES)) {
+                es.shutdownNow();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -242,13 +245,6 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
                 Integer threads = Integer.valueOf(commandLine.getOptionValue("threads"));
                 app.setThreads(threads);
             }
-            if (commandLine.hasOption("intervals")) {
-                File intervals = new File(commandLine.getOptionValue("intervals"));
-                if (!intervals.exists()) {
-                    throw new ParseException("intervals file does not exist");
-                }
-                app.setIntervals(intervals);
-            }
             if (commandLine.hasOption("output")) {
                 File output = new File(commandLine.getOptionValue("output"));
                 app.setOutput(output);
@@ -260,7 +256,7 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
             helpFormatter.printHelp("FilterVCF", cliOptions);
             System.exit(-1);
         }
-
+        System.exit(0);
     }
 
 }
