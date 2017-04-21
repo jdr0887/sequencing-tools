@@ -70,7 +70,7 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
         logger.info("reading samtools depth file");
         Map<Pair<String, Integer>, SAMToolsDepthInterval> samtoolsDepthIntervalMap = new ConcurrentHashMap<>();
         try (Stream<String> stream = Files.lines(this.input.toPath())) {
-            stream.forEach(line -> {
+            stream.parallel().forEach(line -> {
 
                 SAMToolsDepthInterval samtoolsDepthInterval = new SAMToolsDepthInterval(line);
                 samtoolsDepthIntervalMap.put(Pair.of(samtoolsDepthInterval.getContig(), samtoolsDepthInterval.getPosition()),
