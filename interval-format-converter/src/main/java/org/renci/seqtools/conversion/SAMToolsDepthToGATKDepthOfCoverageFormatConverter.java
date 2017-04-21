@@ -1,20 +1,17 @@
 package org.renci.seqtools.conversion;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -23,11 +20,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callable<Long> {
+public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callable<Void> {
 
     private static final Logger logger = LoggerFactory.getLogger(SAMToolsDepthToGATKDepthOfCoverageFormatConverter.class);
 
@@ -39,111 +36,101 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
 
     private File intervals;
 
-    private Integer threads;
-
     private File output;
 
     public SAMToolsDepthToGATKDepthOfCoverageFormatConverter() {
         super();
-        this.threads = 4;
     }
 
     public SAMToolsDepthToGATKDepthOfCoverageFormatConverter(File input, File intervals, File output) {
-        this(input, intervals, output, 4);
-    }
-
-    public SAMToolsDepthToGATKDepthOfCoverageFormatConverter(File input, File intervals, File output, Integer threads) {
         super();
         this.input = input;
         this.intervals = intervals;
-        this.threads = threads;
         this.output = output;
     }
 
     @Override
-    public Long call() throws Exception {
+    public Void call() throws Exception {
         logger.info(this.toString());
 
         long startTime = System.currentTimeMillis();
 
         logger.info("reading intervals file");
-        List<String> allIntervals = FileUtils.readLines(intervals, "UTF-8");
-        if (allIntervals.contains("Targets")) {
-            allIntervals.remove("Targets");
-        }
         SortedSet<GATKDepthInterval> allIntervalSet = new TreeSet<GATKDepthInterval>();
-        allIntervals.forEach(a -> allIntervalSet.add(new GATKDepthInterval(a)));
-        allIntervals = null;
-
-        ExecutorService es = Executors.newFixedThreadPool(threads);
+        try (Stream<String> stream = Files.lines(this.intervals.toPath())) {
+            stream.forEach(line -> {
+                if (!line.startsWith("Targets")) {
+                    allIntervalSet.add(new GATKDepthInterval(line));
+                }
+            });
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
 
         logger.info("reading samtools depth file");
-        try (FileReader fr = new FileReader(input); BufferedReader br = new BufferedReader(fr)) {
-            String line;
-            while ((line = br.readLine()) != null) {
+        Map<Pair<String, Integer>, SAMToolsDepthInterval> samtoolsDepthIntervalMap = new ConcurrentHashMap<>();
+        try (Stream<String> stream = Files.lines(this.input.toPath())) {
+            stream.forEach(line -> {
 
                 SAMToolsDepthInterval samtoolsDepthInterval = new SAMToolsDepthInterval(line);
+                samtoolsDepthIntervalMap.put(Pair.of(samtoolsDepthInterval.getContig(), samtoolsDepthInterval.getPosition()),
+                        samtoolsDepthInterval);
 
-                Optional<GATKDepthInterval> optionalGATKDepthInterval = allIntervalSet.parallelStream()
-                        .filter(a -> a.getContig().equals(samtoolsDepthInterval.getContig())
-                                && a.getPositionRange().contains(samtoolsDepthInterval.getPosition()))
-                        .findFirst();
+            });
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        logger.info("samtoolsDepthIntervalMap.size(): {}", samtoolsDepthIntervalMap.size());
 
-                if (optionalGATKDepthInterval.isPresent()) {
+        logger.info("processing");
+        allIntervalSet.forEach(gatkDepthInterval -> {
 
-                    es.submit(() -> {
+            for (int i = gatkDepthInterval.getStartPosition(); i < gatkDepthInterval.getEndPosition() + 1; i++) {
+                SAMToolsDepthInterval samtoolsDepthInterval = samtoolsDepthIntervalMap.get(Pair.of(gatkDepthInterval.getContig(), i));
 
-                        GATKDepthInterval gatkDepthInterval = optionalGATKDepthInterval.get();
+                if (samtoolsDepthInterval != null) {
+                    gatkDepthInterval.getTotalCoverage().addAndGet(samtoolsDepthInterval.getCoverage());
 
-                        gatkDepthInterval.getTotalCoverage().addAndGet(samtoolsDepthInterval.getCoverage());
+                    if (samtoolsDepthInterval.getCoverage() >= 1) {
+                        gatkDepthInterval.getSampleCountAbove1().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 1) {
-                            gatkDepthInterval.getSampleCountAbove1().incrementAndGet();
-                        }
+                    if (samtoolsDepthInterval.getCoverage() >= 2) {
+                        gatkDepthInterval.getSampleCountAbove2().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 2) {
-                            gatkDepthInterval.getSampleCountAbove2().incrementAndGet();
-                        }
+                    if (samtoolsDepthInterval.getCoverage() >= 5) {
+                        gatkDepthInterval.getSampleCountAbove5().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 5) {
-                            gatkDepthInterval.getSampleCountAbove5().incrementAndGet();
-                        }
+                    if (samtoolsDepthInterval.getCoverage() >= 8) {
+                        gatkDepthInterval.getSampleCountAbove8().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 8) {
-                            gatkDepthInterval.getSampleCountAbove8().incrementAndGet();
-                        }
+                    if (samtoolsDepthInterval.getCoverage() >= 10) {
+                        gatkDepthInterval.getSampleCountAbove10().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 10) {
-                            gatkDepthInterval.getSampleCountAbove10().incrementAndGet();
-                        }
+                    if (samtoolsDepthInterval.getCoverage() >= 15) {
+                        gatkDepthInterval.getSampleCountAbove15().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 15) {
-                            gatkDepthInterval.getSampleCountAbove15().incrementAndGet();
-                        }
+                    if (samtoolsDepthInterval.getCoverage() >= 20) {
+                        gatkDepthInterval.getSampleCountAbove20().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 20) {
-                            gatkDepthInterval.getSampleCountAbove20().incrementAndGet();
-                        }
+                    if (samtoolsDepthInterval.getCoverage() >= 30) {
+                        gatkDepthInterval.getSampleCountAbove30().incrementAndGet();
+                    }
 
-                        if (samtoolsDepthInterval.getCoverage() >= 30) {
-                            gatkDepthInterval.getSampleCountAbove30().incrementAndGet();
-                        }
-
-                        if (samtoolsDepthInterval.getCoverage() >= 50) {
-                            gatkDepthInterval.getSampleCountAbove50().incrementAndGet();
-                        }
-
-                    });
+                    if (samtoolsDepthInterval.getCoverage() >= 50) {
+                        gatkDepthInterval.getSampleCountAbove50().incrementAndGet();
+                    }
                 }
 
             }
-            es.shutdown();
-            if (!es.awaitTermination(90L, TimeUnit.MINUTES)) {
-                es.shutdownNow();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        });
 
         logger.info("writing output");
         try (FileWriter fw = new FileWriter(output); BufferedWriter bw = new BufferedWriter(fw)) {
@@ -166,12 +153,13 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         long endTime = System.currentTimeMillis();
+        logger.info("duration {} seconds", (endTime - startTime) / 1000);
 
-        return endTime - startTime;
+        return null;
     }
 
     public File getInput() {
@@ -190,14 +178,6 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
         this.intervals = intervals;
     }
 
-    public Integer getThreads() {
-        return threads;
-    }
-
-    public void setThreads(Integer threads) {
-        this.threads = threads;
-    }
-
     public File getOutput() {
         return output;
     }
@@ -209,7 +189,7 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
     @Override
     public String toString() {
         return String.format("SAMToolsDepthToGATKDepthOfCoverageFormatConverter [input=%s, intervals=%s, threads=%s, output=%s]", input,
-                intervals, threads, output);
+                intervals, output);
     }
 
     public static void main(String[] args) {
@@ -217,7 +197,6 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
         cliOptions.addOption(Option.builder("i").longOpt("input").desc("absolute path to SAMTools Depth file").required().hasArg().build());
         cliOptions.addOption(Option.builder("o").longOpt("output").desc("absolute path to Output file").required().hasArg().build());
         cliOptions.addOption(Option.builder("l").longOpt("intervals").desc("all intervals file").required().hasArg().build());
-        cliOptions.addOption(Option.builder("t").longOpt("threads").desc("threads").hasArg().build());
         cliOptions.addOption(Option.builder("h").longOpt("help").desc("print this help message").build());
         SAMToolsDepthToGATKDepthOfCoverageFormatConverter app = new SAMToolsDepthToGATKDepthOfCoverageFormatConverter();
         try {
@@ -241,22 +220,17 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
                 }
                 app.setIntervals(intervals);
             }
-            if (commandLine.hasOption("threads")) {
-                Integer threads = Integer.valueOf(commandLine.getOptionValue("threads"));
-                app.setThreads(threads);
-            }
             if (commandLine.hasOption("output")) {
                 File output = new File(commandLine.getOptionValue("output"));
                 app.setOutput(output);
             }
-            Long duration = app.call();
-            logger.info("Duration {} seconds", duration / 1000);
+            app.call();
+            System.exit(0);
         } catch (Exception e) {
-            logger.error(e.getMessage());
-            helpFormatter.printHelp("FilterVCF", cliOptions);
+            logger.error(e.getMessage(), e);
+            helpFormatter.printHelp(SAMToolsDepthToGATKDepthOfCoverageFormatConverter.class.getSimpleName(), cliOptions);
             System.exit(-1);
         }
-        System.exit(0);
     }
 
 }
