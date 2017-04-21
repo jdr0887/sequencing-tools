@@ -188,8 +188,8 @@ public class SAMToolsDepthToGATKDepthOfCoverageFormatConverter implements Callab
 
     @Override
     public String toString() {
-        return String.format("SAMToolsDepthToGATKDepthOfCoverageFormatConverter [input=%s, intervals=%s, threads=%s, output=%s]", input,
-                intervals, output);
+        return String.format("SAMToolsDepthToGATKDepthOfCoverageFormatConverter [input=%s, intervals=%s, output=%s]", input, intervals,
+                output);
     }
 
     public static void main(String[] args) {
